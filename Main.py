@@ -4,10 +4,8 @@ from Models.GasEntry import GasEntry
 from Models.Vehicle import Vehicle
 
 file_helper = FileHelper()
-entry = GasEntry(1, '11/10/2020', 166768, 9.863, 2.099)
-vehicle = Vehicle('Dodge Dakota', 2001, 'Dodge', 'Dakota', 'black')
-file_helper.save_gas_entry(entry)
-file_helper.save_vehicle(vehicle)
+file_helper.delete_vehicle(2)
+file_helper.delete_gas_entry(2)
 
 
 window = tkinter.Tk()

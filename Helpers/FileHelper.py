@@ -19,6 +19,12 @@ class FileHelper:
         file.close()
         return
 
+    def delete_vehicle(self, vehicle_id):
+        original_path = f'{self.__data_directory}/Vehicle.csv'
+        updated_path = f'{self.__data_directory}/Vehicle_updated.csv'
+        self.__delete_file_entry(vehicle_id, original_path, updated_path)
+        return
+
     def save_gas_entry(self, entry):
         path = f'{self.__data_directory}/GasEntry.csv'
         entry_info = f'\n{self.__get_next_id(path)},{entry.get_vehicle_id()},{entry.get_date()},' \
@@ -27,6 +33,12 @@ class FileHelper:
         file = open(path, 'a')
         file.write(entry_info)
         file.close()
+        return
+
+    def delete_gas_entry(self, entry_id):
+        old_path = f'{self.__data_directory}/GasEntry.csv'
+        updated_path = f'{self.__data_directory}/GasEntry_updated.csv'
+        self.__delete_file_entry(entry_id, old_path, updated_path)
         return
 
     @staticmethod
@@ -46,3 +58,24 @@ class FileHelper:
         if len(ids) > 0:
             max_id = int(max(ids))
         return max_id + 1
+
+    @staticmethod
+    def __delete_file_entry(entry_id, original_path, updated_path):
+        old_file = open(original_path, 'r')
+        new_file = open(updated_path, 'w')
+
+        # write every line except for the one I want to delete into the new file
+        while True:
+            line = old_file.readline()
+            if not line:
+                break
+            if not line.startswith(str(entry_id)):
+                new_file.write(line)
+
+        old_file.close()
+        new_file.close()
+        # delete the old file
+        os.remove(original_path)
+        # rename the new file to the old name
+        os.rename(updated_path, original_path)
+        return
