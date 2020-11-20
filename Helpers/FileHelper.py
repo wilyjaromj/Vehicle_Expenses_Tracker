@@ -1,4 +1,5 @@
 import os
+import csv
 
 
 class FileHelper:
@@ -11,12 +12,20 @@ class FileHelper:
 
     def save_vehicle(self, vehicle):
         path = f'{self.__data_directory}/Vehicle.csv'
-        vehicle_info = f'\n{self.__get_next_id(path)},{vehicle.get_name()},{vehicle.get_year()},' \
-                       f'{vehicle.get_make()},{vehicle.get_model()},{vehicle.get_color()}'
 
-        file = open(path, 'a')
-        file.write(vehicle_info)
-        file.close()
+        new_vehicle = [
+            self.__get_next_id(path),
+            vehicle.get_name(),
+            vehicle.get_year(),
+            vehicle.get_make(),
+            vehicle.get_model(),
+            vehicle.get_color()
+        ]
+
+        with open(path, 'a', newline='') as file:
+            file_writer = csv.writer(file)
+            file_writer.writerow(new_vehicle)
+
         return
 
     def delete_vehicle(self, vehicle_id):
@@ -27,12 +36,20 @@ class FileHelper:
 
     def save_gas_entry(self, entry):
         path = f'{self.__data_directory}/GasEntry.csv'
-        entry_info = f'\n{self.__get_next_id(path)},{entry.get_vehicle_id()},{entry.get_date()},' \
-                     f'{entry.get_odometer()},{entry.get_quantity()},{entry.get_price_per_gallon()}'
 
-        file = open(path, 'a')
-        file.write(entry_info)
-        file.close()
+        new_entry = [
+            self.__get_next_id(path),
+            entry.get_vehicle_id(),
+            entry.get_date(),
+            entry.get_odometer(),
+            entry.get_quantity(),
+            entry.get_price_per_gallon()
+        ]
+
+        with open(path, 'a', newline='') as file:
+            file_writer = csv.writer(file)
+            file_writer.writerow(new_entry)
+
         return
 
     def delete_gas_entry(self, entry_id):
@@ -44,16 +61,16 @@ class FileHelper:
     @staticmethod
     def __get_next_id(path):
         ids = []
-        file = open(path, 'r')
-        file.readline()  # read first line to get past the header
 
-        while True:
-            line = file.readline()
-            if not line:
-                break
-            ids.append(line.split(',')[0])
+        with open(path, 'r') as file:
+            file.readline()  # read first line to get past the header
 
-        file.close()
+            while True:
+                line = file.readline()
+                if not line:
+                    break
+                ids.append(line.split(',')[0])
+
         max_id = 0
         if len(ids) > 0:
             max_id = int(max(ids))
@@ -61,19 +78,15 @@ class FileHelper:
 
     @staticmethod
     def __delete_file_entry(entry_id, original_path, updated_path):
-        old_file = open(original_path, 'r')
-        new_file = open(updated_path, 'w')
+        with open(original_path, 'r') as old_file, open(updated_path, 'w', newline='') as new_file:
+            file_writer = csv.writer(new_file)
+            # write every line except for the one I want to delete into the new file
+            for row in csv.reader(old_file):
+                if len(row) < 1:
+                    break
+                if row[0] != str(entry_id):
+                    file_writer.writerow(row)
 
-        # write every line except for the one I want to delete into the new file
-        while True:
-            line = old_file.readline()
-            if not line:
-                break
-            if not line.startswith(str(entry_id)):
-                new_file.write(line)
-
-        old_file.close()
-        new_file.close()
         # delete the old file
         os.remove(original_path)
         # rename the new file to the old name
